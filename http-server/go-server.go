@@ -2,19 +2,29 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/go-chi/chi/v5"
 )
 
 func main() {
-	server := http.Server{Addr: ":8080"}
-	http.HandleFunc("/getNames", getNames)
+	router := chi.NewRouter()
+	router.Get("/user/{id}", getUserById)
+	router.Get("/getNames", getNames)
+	userHandler := &UserHandler{data: make(map[int]string)}
+	router.MethodFunc(http.MethodGet, "/users", userHandler.Get)
+	router.MethodFunc(http.MethodPost, "/user", userHandler.Post)
 
+	server := http.Server{
+		Addr:    ":8080",
+		Handler: router,
+	}
+	//http.HandleFunc("/getNames", getNames)
 	log.Println("Try to start server...")
 
 	shutdown := make(chan os.Signal, 1)
@@ -42,15 +52,4 @@ func main() {
 		log.Fatal(err)
 	}
 	log.Println("Server stopped gracefully")
-}
-
-func getNames(writer http.ResponseWriter, request *http.Request) {
-	names := map[int]string{0: "Mohan", 1: "Dinos", 2: "Some Name"}
-
-	for key, val := range names {
-		temp := fmt.Sprintf("Id=%d Name=%s", key, val)
-		fmt.Println(temp)
-		// TODO: Handle error
-		fmt.Fprintln(writer, temp)
-	}
 }
