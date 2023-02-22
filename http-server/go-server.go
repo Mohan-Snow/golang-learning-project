@@ -10,15 +10,22 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 func main() {
 	router := chi.NewRouter()
 	router.Get("/user/{id}", getUserById)
 	router.Get("/getNames", getNames)
+
 	userHandler := &UserHandler{data: make(map[int]string)}
-	router.MethodFunc(http.MethodGet, "/users", userHandler.Get)
 	router.MethodFunc(http.MethodPost, "/user", userHandler.Post)
+
+	// decorate handler with logging functionality
+	router.Route("/", func(subRouter chi.Router) {
+		subRouter.Use(middleware.Logger)
+		subRouter.MethodFunc(http.MethodGet, "/users", userHandler.Get)
+	})
 
 	server := http.Server{
 		Addr:    ":8080",
