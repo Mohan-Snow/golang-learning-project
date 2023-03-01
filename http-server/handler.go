@@ -26,11 +26,16 @@ func getNames(writer http.ResponseWriter, request *http.Request) {
 	//}
 }
 
-func getUserById(writer http.ResponseWriter, request *http.Request) {
+func (h *UserHandler) getUserById(writer http.ResponseWriter, request *http.Request) {
 	id := chi.URLParam(request, "id")
 	log.Printf("Get User by id=%s", id)
-	username := fmt.Sprintf("NewUser[%s]", id)
 	userId, _ := strconv.ParseInt(id, 10, 64)
+	userName := h.data[int(userId)]
+	if userName == "" {
+		writeResponse(writer, http.StatusNotFound, Error{"User was not found!"})
+		return
+	}
+	username := fmt.Sprintf("%s", userName)
 	user := User{int(userId), username}
 	writeResponse(writer, http.StatusOK, user)
 }
@@ -46,6 +51,7 @@ func (h *UserHandler) Post(writer http.ResponseWriter, request *http.Request) {
 	err := json.NewDecoder(request.Body).Decode(&user)
 	if err != nil {
 		writeResponse(writer, http.StatusBadRequest, Error{err.Error()})
+		return
 	}
 	h.data[user.Id] = user.Name
 	writeResponse(writer, http.StatusOK, user)

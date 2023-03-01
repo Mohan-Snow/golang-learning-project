@@ -15,7 +15,7 @@ import (
 
 func main() {
 	router := chi.NewRouter()
-	router.Get("/user/{id}", getUserById)
+	//router.Get("/user/{id}", getUserById)
 	router.Get("/getNames", getNames)
 
 	userHandler := &UserHandler{data: make(map[int]string)}
@@ -24,6 +24,7 @@ func main() {
 	// decorate handler with logging functionality
 	router.Route("/", func(subRouter chi.Router) {
 		subRouter.Use(middleware.Logger)
+		subRouter.MethodFunc(http.MethodGet, "/user/{id}", userHandler.getUserById)
 		subRouter.MethodFunc(http.MethodGet, "/users", userHandler.Get)
 	})
 
