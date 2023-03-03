@@ -11,20 +11,27 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+
+	"golang-learning-project/http-server/internal/handler"
+	"golang-learning-project/http-server/internal/service"
 )
 
 func main() {
 	router := chi.NewRouter()
 	//router.Get("/user/{id}", getUserById)
-	router.Get("/getNames", getNames)
 
-	userHandler := &UserHandler{data: make(map[int]string)}
+	// initialize service and handler
+	userRepo := make(map[int]string) // change to repository implementation in the future
+	userService := service.New(userRepo)
+	userHandler := handler.New(userService)
+
+	router.Get("/getNames", userHandler.GetNames)
 	router.MethodFunc(http.MethodPost, "/user", userHandler.Post)
 
 	// decorate handler with logging functionality
 	router.Route("/", func(subRouter chi.Router) {
 		subRouter.Use(middleware.Logger)
-		subRouter.MethodFunc(http.MethodGet, "/user/{id}", userHandler.getUserById)
+		subRouter.MethodFunc(http.MethodGet, "/user/{id}", userHandler.GetUserById)
 		subRouter.MethodFunc(http.MethodGet, "/users", userHandler.Get)
 	})
 
