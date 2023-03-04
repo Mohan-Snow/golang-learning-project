@@ -62,5 +62,8 @@ func (h *Handler) Post(writer http.ResponseWriter, request *http.Request) {
 func writeResponse(writer http.ResponseWriter, code int, v interface{}) {
 	body, _ := json.Marshal(v)
 	writer.WriteHeader(code)
-	writer.Write(body)
+	_, err := writer.Write(body)
+	if err != nil {
+		log.Print(err)
+	}
 }
