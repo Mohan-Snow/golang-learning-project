@@ -52,7 +52,8 @@ func (h *Handler) Post(writer http.ResponseWriter, request *http.Request) {
 	user := model.User{}
 	err := json.NewDecoder(request.Body).Decode(&user)
 	if err != nil {
-		writeResponse(writer, http.StatusBadRequest, model.Error{Error: err.Error()})
+		log.Print(err) //TODO: questionable logging. Review needed!
+		writeResponse(writer, http.StatusBadRequest, model.Error{Error: "User was not saved. Internal service error."})
 		return
 	}
 	h.service.SaveUser(&user)
