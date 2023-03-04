@@ -64,6 +64,6 @@ func writeResponse(writer http.ResponseWriter, code int, v interface{}) {
 	writer.WriteHeader(code)
 	_, err := writer.Write(body)
 	if err != nil {
-		log.Print(err)
+		log.Print(err) // logging with log package because fmt package is not concurrent safe
 	}
 }
