@@ -10,21 +10,17 @@ type Service struct {
 	repository map[int]string
 }
 
-func New(r map[int]string) *Service {
+func New() *Service {
+	userRepo := make(map[int]string)
 	return &Service{
-		repository: r,
+		repository: userRepo,
 	}
 }
 
-func (s *Service) GetNames() map[int]string {
-	return map[int]string{0: "Mohan", 1: "Dinos", 2: "Rex"}
-}
-
 func (s *Service) GetUserById(userId string) (*model.User, *model.Error) {
-	// username := fmt.Sprintf("%s", userName)
 	id, _ := strconv.ParseInt(userId, 10, 64)
-	userName := s.repository[int(id)]
-	if userName == "" {
+	userName, ok := s.repository[int(id)]
+	if !ok {
 		return nil, &model.Error{Error: "User was not found!"}
 	}
 	return &model.User{Id: int(id), Name: userName}, nil

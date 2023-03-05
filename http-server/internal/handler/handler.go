@@ -14,7 +14,6 @@ type Handler struct {
 }
 
 type Service interface {
-	GetNames() map[int]string
 	GetUserById(id string) (*model.User, *model.Error)
 	GetAll() map[int]string
 	SaveUser(user *model.User) *model.User
@@ -24,11 +23,6 @@ func New(s Service) *Handler {
 	return &Handler{
 		service: s,
 	}
-}
-
-func (h *Handler) GetNames(writer http.ResponseWriter, request *http.Request) {
-	log.Println("Get Names")
-	writeResponse(writer, http.StatusOK, h.service.GetNames())
 }
 
 func (h *Handler) GetUserById(writer http.ResponseWriter, request *http.Request) {
@@ -52,7 +46,7 @@ func (h *Handler) Post(writer http.ResponseWriter, request *http.Request) {
 	user := model.User{}
 	err := json.NewDecoder(request.Body).Decode(&user)
 	if err != nil {
-		log.Print(err) //TODO: questionable logging. Review needed!
+		log.Print(err)
 		writeResponse(writer, http.StatusBadRequest, model.Error{Error: "User was not saved. Internal service error."})
 		return
 	}

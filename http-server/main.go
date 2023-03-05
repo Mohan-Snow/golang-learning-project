@@ -18,14 +18,11 @@ import (
 
 func main() {
 	router := chi.NewRouter()
-	//router.Get("/user/{id}", getUserById)
 
 	// initialize service and handler
-	userRepo := make(map[int]string) // change to repository implementation in the future
-	userService := service.New(userRepo)
+	userService := service.New()
 	userHandler := handler.New(userService)
 
-	router.Get("/getNames", userHandler.GetNames)
 	router.MethodFunc(http.MethodPost, "/user", userHandler.Post)
 
 	// decorate handler with logging functionality
@@ -39,7 +36,6 @@ func main() {
 		Addr:    ":8080",
 		Handler: router,
 	}
-	//http.HandleFunc("/getNames", getNames)
 	log.Println("Try to start server...")
 
 	shutdown := make(chan os.Signal, 1)
