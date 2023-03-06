@@ -17,9 +17,10 @@ type Service interface {
 	GetUserById(id string) (*model.User, *model.Error)
 	GetAll() map[int]string
 	SaveUser(user *model.User) *model.User
+	GenerateNames() (map[int]string, error)
 }
 
-func New(s Service) *Handler {
+func NewHandler(s Service) *Handler {
 	return &Handler{
 		service: s,
 	}
@@ -52,6 +53,17 @@ func (h *Handler) Post(writer http.ResponseWriter, request *http.Request) {
 	}
 	h.service.SaveUser(&user)
 	writeResponse(writer, http.StatusOK, user)
+}
+
+func (h *Handler) GenerateNames(writer http.ResponseWriter, request *http.Request) {
+	log.Println("Generate names")
+	names, err := h.service.GenerateNames()
+	if err != nil {
+		log.Print(err)
+		writeResponse(writer, http.StatusInternalServerError, model.Error{Error: "Error during names generation. Internal service error."})
+		return
+	}
+	writeResponse(writer, http.StatusOK, names)
 }
 
 func writeResponse(writer http.ResponseWriter, code int, v interface{}) {

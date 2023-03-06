@@ -1,19 +1,25 @@
 package service
 
 import (
+	"encoding/json"
 	"golang-learning-project/http-server/internal/model"
+	"net/http"
 	"strconv"
 )
+
+const namesGenerationService = "https://names.drycodes.com/10"
 
 type Service struct {
 	//data sync.Map
 	repository map[int]string
+	token      string
 }
 
-func New() *Service {
+func NewService(externalApiToken string) *Service {
 	userRepo := make(map[int]string)
 	return &Service{
 		repository: userRepo,
+		token:      externalApiToken,
 	}
 }
 
@@ -33,4 +39,20 @@ func (s *Service) GetAll() map[int]string {
 func (s *Service) SaveUser(user *model.User) *model.User {
 	s.repository[user.Id] = user.Name
 	return user
+}
+
+func (s *Service) GenerateNames() (map[int]string, error) {
+	response, err := http.Get(namesGenerationService)
+	if err != nil {
+		return nil, err
+	}
+	var arr []string
+	err = json.NewDecoder(response.Body).Decode(&arr)
+	if err != nil {
+		return nil, err
+	}
+	for i := 0; i < 10; i++ {
+		s.repository[i+1] = arr[i]
+	}
+	return s.repository, nil
 }

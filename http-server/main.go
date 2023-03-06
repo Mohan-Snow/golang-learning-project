@@ -17,11 +17,16 @@ import (
 )
 
 func main() {
+	//propertiesConfig, err := config.NewConfig()
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
 	router := chi.NewRouter()
-
 	// initialize service and handler
-	userService := service.New()
-	userHandler := handler.New(userService)
+	// userRepo := repository.NewRepository(propertiesConfig.Username, propertiesConfig.Password)
+	//userService := service.NewService(userRepo, propertiesConfig.ExternalApiToken)
+	userService := service.NewService("propertiesConfig.ExternalApiToken")
+	userHandler := handler.NewHandler(userService)
 
 	router.MethodFunc(http.MethodPost, "/user", userHandler.Post)
 
@@ -30,6 +35,7 @@ func main() {
 		subRouter.Use(middleware.Logger)
 		subRouter.MethodFunc(http.MethodGet, "/user/{id}", userHandler.GetUserById)
 		subRouter.MethodFunc(http.MethodGet, "/users", userHandler.Get)
+		subRouter.MethodFunc(http.MethodGet, "/generateNames", userHandler.GenerateNames)
 	})
 
 	server := http.Server{
