@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -12,20 +13,21 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
+	"golang-learning-project/http-server/internal/config"
 	"golang-learning-project/http-server/internal/handler"
 	"golang-learning-project/http-server/internal/service"
 )
 
 func main() {
-	//propertiesConfig, err := config.NewConfig()
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
+	propertiesConfig, err := config.NewConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
 	router := chi.NewRouter()
-	// initialize service and handler
+	// initialize repository, service and handler
 	// userRepo := repository.NewRepository(propertiesConfig.Username, propertiesConfig.Password)
 	//userService := service.NewService(userRepo, propertiesConfig.ExternalApiToken)
-	userService := service.NewService("propertiesConfig.ExternalApiToken")
+	userService := service.NewService(propertiesConfig.GenerationQueryParam)
 	userHandler := handler.NewHandler(userService)
 
 	router.MethodFunc(http.MethodPost, "/user", userHandler.Post)
@@ -39,7 +41,7 @@ func main() {
 	})
 
 	server := http.Server{
-		Addr:    ":8080",
+		Addr:    fmt.Sprintf(":%s", propertiesConfig.Port),
 		Handler: router,
 	}
 	log.Println("Try to start server...")

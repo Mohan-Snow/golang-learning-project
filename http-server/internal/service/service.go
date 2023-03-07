@@ -2,24 +2,24 @@ package service
 
 import (
 	"encoding/json"
+	"fmt"
 	"golang-learning-project/http-server/internal/model"
 	"net/http"
 	"strconv"
 )
 
-const namesGenerationService = "https://names.drycodes.com/10"
+const namesGenerationService = "https://names.drycodes.com/10?nameOptions=%s"
 
 type Service struct {
-	//data sync.Map
-	repository map[int]string
-	token      string
+	repository      map[int]string
+	namesQueryParam string
 }
 
-func NewService(externalApiToken string) *Service {
+func NewService(param string) *Service {
 	userRepo := make(map[int]string)
 	return &Service{
-		repository: userRepo,
-		token:      externalApiToken,
+		repository:      userRepo,
+		namesQueryParam: param,
 	}
 }
 
@@ -32,8 +32,9 @@ func (s *Service) GetUserById(userId string) (*model.User, *model.Error) {
 	return &model.User{Id: int(id), Name: userName}, nil
 }
 
-func (s *Service) GetAll() map[int]string {
-	return s.repository
+func (s *Service) GetAll() []model.User {
+	// TODO: Is it ok?
+	return getUserList(s.repository)
 }
 
 func (s *Service) SaveUser(user *model.User) *model.User {
@@ -41,8 +42,8 @@ func (s *Service) SaveUser(user *model.User) *model.User {
 	return user
 }
 
-func (s *Service) GenerateNames() (map[int]string, error) {
-	response, err := http.Get(namesGenerationService)
+func (s *Service) GenerateNames() ([]model.User, error) {
+	response, err := http.Get(fmt.Sprintf(namesGenerationService, s.namesQueryParam))
 	if err != nil {
 		return nil, err
 	}
@@ -51,8 +52,23 @@ func (s *Service) GenerateNames() (map[int]string, error) {
 	if err != nil {
 		return nil, err
 	}
+	// save generated names to repository
+	currLength := len(s.repository)
 	for i := 0; i < 10; i++ {
-		s.repository[i+1] = arr[i]
+		currLength++
+		s.repository[currLength] = arr[i]
 	}
-	return s.repository, nil
+	// TODO: Is it ok?
+	return getUserList(s.repository), nil
+}
+
+// working with a copy of map here
+// TODO: Is it ok?
+func getUserList(users map[int]string) []model.User {
+	var nameList []model.User
+	for key, val := range users {
+		user := model.User{Id: key, Name: val}
+		nameList = append(nameList, user)
+	}
+	return nameList
 }

@@ -3,10 +3,10 @@ package config
 import "github.com/caarlos0/env/v6"
 
 type Config struct {
-	Port             int    `env:"PORT" envDefault:"8080"`
-	ExternalApiToken string `env:"EXTERNAL_API_TOKEN,notEmpty,unset,file"`
-	Username         string
-	Password         string
+	Port                 string `env:"PORT" envDefault:"8080"`
+	GenerationQueryParam string `env:"GENERATION_QUERY_PARAM,notEmpty,unset,file"`
+	Username             string `env:"DB_USERNAME" envDefault:"test_username"`
+	Password             string `env:"DB_PASSWORD" envDefault:"test_password"`
 }
 
 func NewConfig() (*Config, error) {

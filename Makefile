@@ -1,6 +1,6 @@
 .PHONY: run
 run:
-	@export EXTERNAL_API_TOKEN=.token && go run http-server/*.go
+	@export GENERATION_QUERY_PARAM=.token && go run http-server/*.go
 
 .PHONY: build
 build:
@@ -21,7 +21,10 @@ docker-run:
 		--rm \
 		-p 8080:8080 \
 		-v `pwd`/secret:/secret \
-		-e EXTERNAL_API_TOKEN=/secret/.token \
+		-e PORT="8081" \
+		-e GENERATION_QUERY_PARAM=/secret/.token \
+		-e DB_USERNAME="new_username" \
+		-e DB_PASSWORD="new_password" \
 		go-learning-proj
 
 .PHONY: restart

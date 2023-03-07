@@ -15,9 +15,9 @@ type Handler struct {
 
 type Service interface {
 	GetUserById(id string) (*model.User, *model.Error)
-	GetAll() map[int]string
+	GetAll() []model.User
 	SaveUser(user *model.User) *model.User
-	GenerateNames() (map[int]string, error)
+	GenerateNames() ([]model.User, error)
 }
 
 func NewHandler(s Service) *Handler {
