@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
+	"golang-learning-project/http-server/internal/repository"
 	"log"
 	"net/http"
 	"os"
@@ -24,10 +26,16 @@ func main() {
 		log.Fatal(err)
 	}
 	router := chi.NewRouter()
+	db, err := sql.Open("postgres",
+		"user:password@tcp(127.0.0.1:5432)")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
 	// initialize repository, service and handler
-	// userRepo := repository.NewRepository(propertiesConfig.Username, propertiesConfig.Password)
+	userRepo := repository.NewRepository(make(map[int]string))
 	//userService := service.NewService(userRepo, propertiesConfig.ExternalApiToken)
-	userService := service.NewService(propertiesConfig.GenerationQueryParam)
+	userService := service.NewService(propertiesConfig.GenerationQueryParam, userRepo)
 	userHandler := handler.NewHandler(userService)
 
 	router.MethodFunc(http.MethodPost, "/user", userHandler.Post)
@@ -51,7 +59,7 @@ func main() {
 	defer signal.Stop(shutdown)
 
 	go func() {
-		log.Println("Server started working...")
+		log.Printf("Server started working on port:%s", propertiesConfig.Port)
 		err := server.ListenAndServe()
 		if err != nil && err != http.ErrServerClosed {
 			log.Fatal(err)

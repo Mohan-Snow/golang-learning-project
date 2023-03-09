@@ -11,34 +11,39 @@ import (
 const namesGenerationService = "https://names.drycodes.com/10?nameOptions=%s"
 
 type Service struct {
-	repository      map[int]string
+	repository      Repository
 	namesQueryParam string
 }
 
-func NewService(param string) *Service {
-	userRepo := make(map[int]string)
+type Repository interface {
+	FindAll() []model.User
+	FindUserById(id int) *model.User
+	Save(user *model.User) *model.User
+	SaveAll(arr []string) []model.User
+}
+
+func NewService(param string, r Repository) *Service {
 	return &Service{
-		repository:      userRepo,
+		repository:      r,
 		namesQueryParam: param,
 	}
 }
 
 func (s *Service) GetUserById(userId string) (*model.User, *model.Error) {
 	id, _ := strconv.ParseInt(userId, 10, 64)
-	userName, ok := s.repository[int(id)]
-	if !ok {
+	user := s.repository.FindUserById(int(id))
+	if &user == nil {
 		return nil, &model.Error{Error: "User was not found!"}
 	}
-	return &model.User{Id: int(id), Name: userName}, nil
+	return user, nil
 }
 
 func (s *Service) GetAll() []model.User {
-	// TODO: Is it ok?
-	return getUserList(s.repository)
+	return s.repository.FindAll()
 }
 
 func (s *Service) SaveUser(user *model.User) *model.User {
-	s.repository[user.Id] = user.Name
+	user = s.repository.Save(user)
 	return user
 }
 
@@ -53,22 +58,6 @@ func (s *Service) GenerateNames() ([]model.User, error) {
 		return nil, err
 	}
 	// save generated names to repository
-	currLength := len(s.repository)
-	for i := 0; i < 10; i++ {
-		currLength++
-		s.repository[currLength] = arr[i]
-	}
-	// TODO: Is it ok?
-	return getUserList(s.repository), nil
-}
-
-// working with a copy of map here
-// TODO: Is it ok?
-func getUserList(users map[int]string) []model.User {
-	var nameList []model.User
-	for key, val := range users {
-		user := model.User{Id: key, Name: val}
-		nameList = append(nameList, user)
-	}
-	return nameList
+	users := s.repository.SaveAll(arr)
+	return users, nil
 }
