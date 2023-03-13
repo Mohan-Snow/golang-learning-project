@@ -23,18 +23,23 @@ import (
 func main() {
 	propertiesConfig, err := config.NewConfig()
 	if err != nil {
+		log.Println("Configuration error")
 		log.Fatal(err)
 	}
 	router := chi.NewRouter()
-	db, err := sql.Open("postgres",
-		"user:password@tcp(127.0.0.1:5432)")
+	db, err := sql.Open("postgres", propertiesConfig.DbConnection)
 	if err != nil {
+		log.Println("Database initializing error")
 		log.Fatal(err)
 	}
 	defer db.Close()
+	err = db.Ping()
+	if err != nil {
+		log.Println("Database ping error")
+		log.Fatal(err)
+	}
 	// initialize repository, service and handler
-	userRepo := repository.NewRepository(make(map[int]string))
-	//userService := service.NewService(userRepo, propertiesConfig.ExternalApiToken)
+	userRepo := &repository.Repository{DB: db}
 	userService := service.NewService(propertiesConfig.GenerationQueryParam, userRepo)
 	userHandler := handler.NewHandler(userService)
 

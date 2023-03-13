@@ -16,10 +16,10 @@ type Service struct {
 }
 
 type Repository interface {
-	FindAll() []model.User
-	FindUserById(id int) *model.User
-	Save(user *model.User) *model.User
-	SaveAll(arr []string) []model.User
+	FindAll() ([]model.User, error)
+	FindUserById(id int) (*model.User, error)
+	Save(user *model.User) error
+	SaveAll(arr []string) ([]model.User, error)
 }
 
 func NewService(param string, r Repository) *Service {
@@ -29,22 +29,25 @@ func NewService(param string, r Repository) *Service {
 	}
 }
 
-func (s *Service) GetUserById(userId string) (*model.User, *model.Error) {
+func (s *Service) GetUserById(userId string) (*model.User, error) {
 	id, _ := strconv.ParseInt(userId, 10, 64)
-	user := s.repository.FindUserById(int(id))
-	if &user == nil {
-		return nil, &model.Error{Error: "User was not found!"}
+	user, err := s.repository.FindUserById(int(id))
+	if err != nil {
+		return nil, err
 	}
 	return user, nil
 }
 
-func (s *Service) GetAll() []model.User {
+func (s *Service) GetAll() ([]model.User, error) {
 	return s.repository.FindAll()
 }
 
-func (s *Service) SaveUser(user *model.User) *model.User {
-	user = s.repository.Save(user)
-	return user
+func (s *Service) SaveUser(user *model.User) error {
+	err := s.repository.Save(user)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *Service) GenerateNames() ([]model.User, error) {
@@ -58,6 +61,9 @@ func (s *Service) GenerateNames() ([]model.User, error) {
 		return nil, err
 	}
 	// save generated names to repository
-	users := s.repository.SaveAll(arr)
+	users, err := s.repository.SaveAll(arr)
+	if err != nil {
+		return nil, err
+	}
 	return users, nil
 }

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/go-chi/chi/v5"
 	"log"
 	"net/http"
@@ -14,9 +15,9 @@ type Handler struct {
 }
 
 type Service interface {
-	GetUserById(id string) (*model.User, *model.Error)
-	GetAll() []model.User
-	SaveUser(user *model.User) *model.User
+	GetUserById(id string) (*model.User, error)
+	GetAll() ([]model.User, error)
+	SaveUser(user *model.User) error
 	GenerateNames() ([]model.User, error)
 }
 
@@ -31,7 +32,9 @@ func (h *Handler) GetUserById(writer http.ResponseWriter, request *http.Request)
 	log.Printf("Get User by id=%s", userId)
 	user, err := h.service.GetUserById(userId)
 	if err != nil {
-		writeResponse(writer, http.StatusNotFound, err)
+		log.Println(err)
+		writeResponse(writer, http.StatusNotFound,
+			model.Error{Error: fmt.Sprintf("User was not found by id %s.", userId)})
 		return
 	}
 	writeResponse(writer, http.StatusOK, user)
@@ -39,7 +42,13 @@ func (h *Handler) GetUserById(writer http.ResponseWriter, request *http.Request)
 
 func (h *Handler) Get(writer http.ResponseWriter, request *http.Request) {
 	log.Println("Get all users")
-	writeResponse(writer, http.StatusOK, h.service.GetAll())
+	users, err := h.service.GetAll()
+	if err != nil {
+		log.Println(err)
+		writeResponse(writer, http.StatusOK, model.Error{Error: "Error while retrieving users."})
+		return
+	}
+	writeResponse(writer, http.StatusOK, users)
 }
 
 func (h *Handler) Post(writer http.ResponseWriter, request *http.Request) {
@@ -51,8 +60,13 @@ func (h *Handler) Post(writer http.ResponseWriter, request *http.Request) {
 		writeResponse(writer, http.StatusBadRequest, model.Error{Error: "User was not saved. Internal service error."})
 		return
 	}
-	h.service.SaveUser(&user)
-	writeResponse(writer, http.StatusOK, user)
+	err = h.service.SaveUser(&user)
+	if err != nil {
+		log.Println(err)
+		writeResponse(writer, http.StatusBadRequest, model.Error{Error: "Error while saving user to database."})
+		return
+	}
+	writeResponse(writer, http.StatusOK, fmt.Sprintf("User %s was succsessfully saved.", user.Name))
 }
 
 func (h *Handler) GenerateNames(writer http.ResponseWriter, request *http.Request) {
