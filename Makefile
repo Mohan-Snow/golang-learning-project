@@ -26,6 +26,15 @@ docker-run:
 		-e DB_CONNECTION=/secret/.db_conn \
 		go-learning-proj
 
+.PHONY: docker-run-postgres
+docker-run-postgres:
+	@docker run -d \
+    	--name postgres \
+    	-e POSTGRES_PASSWORD=postgres \
+    	-e PGDATA=/var/lib/postgresql/data/pgdata \
+    	-v /custom/mount:/var/lib/postgresql/data \
+    	postgres
+
 .PHONY: restart
 restart:
 	@docker restart defc84bc55a9
@@ -48,4 +57,4 @@ remove-image:
 
 .PHONY: remove-container
 remove-container:
-	@docker container rm b4821e029bf9 de345bac9d43 e6c89cbb238d cc930b83e04c fc173217ce52 f9654ecc94fd bab394c001ae 77984ca5912f c4a62adddcba 6259fa28747a 09d3cadc10a6
+	@docker container rm postgres

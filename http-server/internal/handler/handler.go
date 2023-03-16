@@ -33,8 +33,7 @@ func (h *Handler) GetUserById(writer http.ResponseWriter, request *http.Request)
 	user, err := h.service.GetUserById(userId)
 	if err != nil {
 		log.Println(err)
-		writeResponse(writer, http.StatusNotFound,
-			model.Error{Error: fmt.Sprintf("User was not found by id %s.", userId)})
+		writeResponse(writer, http.StatusNotFound, err)
 		return
 	}
 	writeResponse(writer, http.StatusOK, user)
@@ -45,7 +44,7 @@ func (h *Handler) Get(writer http.ResponseWriter, request *http.Request) {
 	users, err := h.service.GetAll()
 	if err != nil {
 		log.Println(err)
-		writeResponse(writer, http.StatusOK, model.Error{Error: "Error while retrieving users."})
+		writeResponse(writer, http.StatusOK, err)
 		return
 	}
 	writeResponse(writer, http.StatusOK, users)
@@ -57,13 +56,17 @@ func (h *Handler) Post(writer http.ResponseWriter, request *http.Request) {
 	err := json.NewDecoder(request.Body).Decode(&user)
 	if err != nil {
 		log.Print(err)
-		writeResponse(writer, http.StatusBadRequest, model.Error{Error: "User was not saved. Internal service error."})
+		writeResponse(writer, http.StatusBadRequest,
+			model.GeneralError{
+				Message:   "User was not saved. Problem occurred while decoding request body data.",
+				ErrorCode: 1002,
+			})
 		return
 	}
 	err = h.service.SaveUser(&user)
 	if err != nil {
 		log.Println(err)
-		writeResponse(writer, http.StatusBadRequest, model.Error{Error: "Error while saving user to database."})
+		writeResponse(writer, http.StatusBadRequest, err)
 		return
 	}
 	writeResponse(writer, http.StatusOK, fmt.Sprintf("User %s was succsessfully saved.", user.Name))
@@ -74,7 +77,7 @@ func (h *Handler) GenerateNames(writer http.ResponseWriter, request *http.Reques
 	names, err := h.service.GenerateNames()
 	if err != nil {
 		log.Print(err)
-		writeResponse(writer, http.StatusInternalServerError, model.Error{Error: "Error during names generation. Internal service error."})
+		writeResponse(writer, http.StatusInternalServerError, err)
 		return
 	}
 	writeResponse(writer, http.StatusOK, names)
