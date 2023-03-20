@@ -26,6 +26,7 @@ docker-run:
 		-e DB_CONNECTION=/secret/.db_conn \
 		go-learning-proj
 
+#fix command to run postgres in docker container
 .PHONY: docker-run-postgres
 docker-run-postgres:
 	@docker run -d \
