@@ -31,9 +31,11 @@ docker-run:
 docker-run-postgres:
 	@docker run -d \
     	--name postgres \
+    	-p 5455:5432 \
+    	-e POSTGRES_USER=postgres \
     	-e POSTGRES_PASSWORD=postgres \
-    	-e PGDATA=/var/lib/postgresql/data/pgdata \
-    	-v /custom/mount:/var/lib/postgresql/data \
+    	-e POSTGRES_DB=backend \
+    	-d \
     	postgres
 
 .PHONY: restart

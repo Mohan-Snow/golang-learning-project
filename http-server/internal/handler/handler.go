@@ -47,6 +47,10 @@ func (h *Handler) Get(writer http.ResponseWriter, request *http.Request) {
 		writeResponse(writer, http.StatusOK, err)
 		return
 	}
+	if len(users) == 0 {
+		writeResponse(writer, http.StatusOK, "No users were found")
+		return
+	}
 	writeResponse(writer, http.StatusOK, users)
 }
 
