@@ -27,7 +27,10 @@ func main() {
 		log.Fatal(err)
 	}
 	router := chi.NewRouter()
-	db, err := sql.Open("postgres", propertiesConfig.DbConnection)
+	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s "+
+		"password=%s dbname=%s sslmode=disable",
+		propertiesConfig.DbHost, propertiesConfig.DbPort, propertiesConfig.DbUser, propertiesConfig.DbPassword, propertiesConfig.DbName)
+	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
 		log.Println("Database initializing error")
 		log.Fatal(err)
