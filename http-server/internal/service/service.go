@@ -70,6 +70,7 @@ func (s *Service) SaveUser(user *model.User) error {
 
 func (s *Service) GenerateNames() ([]model.User, error) {
 	response, err := http.Get(fmt.Sprintf(namesGenerationService, s.namesQueryParam))
+	defer response.Body.Close()
 	if err != nil {
 		log.Println(err)
 		return nil, &model.ExternalServiceError{
