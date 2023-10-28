@@ -58,6 +58,7 @@ func (r *Repository) saveUser(username string) error {
 func (r *Repository) getUserList() ([]model.User, error) {
 	rows, err := r.Query("SELECT user_id, user_name FROM test_users")
 	var users []model.User
+	defer rows.Close()
 	for rows.Next() {
 		var user model.User
 		if err := rows.Scan(&user.Id, &user.Name); err != nil {
